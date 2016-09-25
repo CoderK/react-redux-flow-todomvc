@@ -1,23 +1,15 @@
 // @flow
+
 import React from 'react';
-import FilterLink from '../containers/FilterLink';
 
-const Footer = () => (
-  <p>
-    Show:
-    {" "}
-    <FilterLink filter="SHOW_ALL">
-      All
-    </FilterLink>
-    {", "}
-    <FilterLink filter="SHOW_ACTIVE">
-      Active
-    </FilterLink>
-    {", "}
-    <FilterLink filter="SHOW_COMPLETED">
-      Completed
-    </FilterLink>
-  </p>
-);
-
-export default Footer;
+export default class Footer extends React.Component {
+  render() {
+    return (
+      <footer className="info">
+        <p>Double-click to edit a todo</p>
+        <p>Written by <a href="https://www.facebook.com/jeokrang">CoderK(jeokrang)</a></p>
+        <p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
+      </footer>
+    );
+  }
+};

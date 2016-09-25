@@ -1,23 +1,71 @@
 // @flow
+
 import React from 'react';
-import Todo from './Todo';
-import type { Todos, Id } from '../types';
+import TodoItem from './TodoItem';
 
-export type Props = {
-  todos: Todos,
-  onTodoClick: (id: Id) => void
+type Props = {
+  todos: List<Map<string, any>>,
+  filter: string,
+  onDeleteItem: (id: string) => void,
+  onDoneEditing: (id: string, value: string) => void,
+  onCancelEditing: (id: string) => void,
+  onToggleComplete: (id: string) => void,
+  onDoubleClickTodo: (id: string) => void,
 };
+type State = {};
 
-const TodoList = ({ todos, onTodoClick }: Props) => (
-  <ul>
-    {todos.map(todo =>
-      <Todo
-        key={todo.id}
-        {...todo}
-        onClick={() => onTodoClick(todo.id)}
-      />
-    )}
-  </ul>
-);
+export default class TodoList extends React.Component {
 
-export default TodoList;
+  props: Props;
+  state: State;
+
+  getItems() {
+    const empty = [];
+
+    if (this.props.todos) {
+      return this.filteredTodosBy(this.props.filter);
+    }
+    return empty;
+  }
+
+  filteredTodosBy(filter: string) {
+    return this.props.todos.filter(
+      (item: Map<string, any>) => {
+        return filter === 'all' || filter === item.get('status');
+      }
+    );
+  }
+
+  isCompleted(item: Map<string, any>) {
+    return item.get('status') === 'completed';
+  }
+
+  render() {
+    const {
+      onDeleteItem,
+      onDoneEditing,
+      onCancelEditing,
+      onToggleComplete,
+      onDoubleClickTodo
+    } = this.props;
+
+    return (
+      <section className="main">
+        <ul className="todo-list">
+          {this.getItems().map(item =>
+            <TodoItem key={ item.get('id') }
+                      text={ item.get('text') }
+                      id={ item.get('id') }
+                      isCompleted={ this.isCompleted(item) }
+                      isEditing={ item.get('editing') }
+                      onDoneEditing={ onDoneEditing }
+                      onCancelEditing={ onCancelEditing }
+                      onToggleComplete={ onToggleComplete }
+                      onDeleteItem={ onDeleteItem }
+                      onDoubleClickTodo={ onDoubleClickTodo }/>
+          )}
+        </ul>
+      </section>
+    );
+  }
+};

@@ -1,16 +1,17 @@
 // @flow
 import React from 'react';
-import { render } from 'react-dom';
-import { createStore } from 'redux';
+import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import App from './components/App';
-import reducer from './reducers';
-import type { Store } from './types';
+import createStore from './store/create-store';
+import App from './containers/App';
+import 'todomvc-app-css/index.css';
 
-const store: Store = createStore(reducer);
+import type { Store } from './types/type-def';
 
-render(
-  <Provider store={store}>
+const store: Store = createStore();
+
+ReactDOM.render(
+  <Provider store={ store }>
     <App />
   </Provider>,
   document.getElementById('root')
