@@ -2,9 +2,10 @@
 
 import React from 'react';
 import TodoItem from './TodoItem';
+import type { Todo } from '../types/type-def';
 
 type Props = {
-  todos: List<Map<string, any>>,
+  todos: [],
   filter: string,
   onDeleteItem: (id: string) => void,
   onDoneEditing: (id: string, value: string) => void,
@@ -20,24 +21,17 @@ export default class TodoList extends React.Component {
   state: State;
 
   getItems() {
-    const empty = [];
-
-    if (this.props.todos) {
-      return this.filteredTodosBy(this.props.filter);
-    }
-    return empty;
+    return this.filteredTodosBy(this.props.filter);
   }
 
   filteredTodosBy(filter: string) {
     return this.props.todos.filter(
-      (item: Map<string, any>) => {
-        return filter === 'all' || filter === item.get('status');
-      }
+      ({ status }) => filter === 'all' || filter === status
     );
   }
 
-  isCompleted(item: Map<string, any>) {
-    return item.get('status') === 'completed';
+  isCompleted({ status }: Todo) {
+    return status === 'completed';
   }
 
   render() {
@@ -52,18 +46,22 @@ export default class TodoList extends React.Component {
     return (
       <section className="main">
         <ul className="todo-list">
-          {this.getItems().map(item =>
-            <TodoItem key={ item.get('id') }
-                      text={ item.get('text') }
-                      id={ item.get('id') }
-                      isCompleted={ this.isCompleted(item) }
-                      isEditing={ item.get('editing') }
-                      onDoneEditing={ onDoneEditing }
-                      onCancelEditing={ onCancelEditing }
-                      onToggleComplete={ onToggleComplete }
-                      onDeleteItem={ onDeleteItem }
-                      onDoubleClickTodo={ onDoubleClickTodo }/>
-          )}
+          {
+            this.getItems()
+              .map(item => {
+                return <TodoItem key={ item.id }
+                          text={ item.text }
+                          id={ item.id }
+                          isCompleted={ this.isCompleted(item) }
+                          isEditing={ item.editing }
+                          onDoneEditing={ onDoneEditing }
+                          onCancelEditing={ onCancelEditing }
+                          onToggleComplete={ onToggleComplete }
+                          onDeleteItem={ onDeleteItem }
+                          onDoubleClickTodo={ onDoubleClickTodo }
+                />;
+              })
+          }
         </ul>
       </section>
     );

@@ -1,102 +1,118 @@
 // @flow
+import type { Action, State }from '../types/type-def';
+import {
+  TOGGLE_COMPLETE,
+  CHANGE_FILTER,
+  EDIT_ITEM,
+  DONE_EDITING,
+  CANCEL_EDITING,
+  CLEAR_COMPLETED,
+  DELETE_ITEM,
+  ADD_ITEM
+} from '../actions/action-creators';
 
-import { Map, List } from 'immutable';
-import type { Action }from '../types/type-def';
-
-type State = Map<string, any>;
-
-function findItemIndex(state: State, itemId: string) {
-  return state.get('todos').findIndex(
-    (item) => item.get('id') === itemId
-  );
+function findItemIndexById(todos, id: string) {
+  return todos.findIndex(todo => todo.id === id);
 }
 
-function toggleComplete(state: State, itemId: string) {
-  const itemIndex = findItemIndex(state, itemId);
-  const updatedItem = state.get('todos')
-    .get(itemIndex)
-    .update('status', status => status === 'active' ? 'completed' : 'active');
+function toggleComplete(state: State, id: string) {
+  const { todos } = state;
+  const itemIndex = findItemIndexById(todos, id);
+  const { status } = todos[itemIndex];
+  const updatedTodos = updateTodo(todos, itemIndex, {
+    status: status === 'active' ? 'completed' : 'active'
+  });
 
-  return state.update('todos', todos => todos.set(itemIndex, updatedItem));
+  return { ...state, todos: updatedTodos };
 }
 
 function changeFilter(state: State, filter: string) {
-  return state.set('filter', filter);
+  return { ...state, filter: filter };
 }
 
-function editItem(state: State, itemId: string) {
-  const itemIndex = findItemIndex(state, itemId);
-  const updatedItem = state.get('todos')
-    .get(itemIndex)
-    .set('editing', true);
+function editItem(state: State, id: string) {
+  const { todos } = state;
+  const itemIndex = findItemIndexById(todos, id);
+  const updatedTodos = updateTodo(todos, itemIndex, { editing: true });
 
-  return state.update('todos', todos => todos.set(itemIndex, updatedItem));
+  return { ...state, todos: updatedTodos };
 }
 
-function cancelEditing(state: State, itemId: string) {
-  const itemIndex = findItemIndex(state, itemId);
-  const updatedItem = state.get('todos')
-    .get(itemIndex)
-    .set('editing', false);
+function cancelEditing(state: State, id: string) {
+  const { todos } = state;
+  const itemIndex = findItemIndexById(todos, id);
+  const updatedTodos = updateTodo(todos, itemIndex, { editing: false });
 
-  return state.update('todos', todos => todos.set(itemIndex, updatedItem));
+  return { ...state, todos: updatedTodos };
 }
 
-function doneEditing(state: State, itemId: string, newText: string) {
-  const itemIndex = findItemIndex(state, itemId);
-  const updatedItem = state.get('todos')
-    .get(itemIndex)
-    .set('editing', false)
-    .set('text', newText);
+function doneEditing(state: State, id: string, text: string) {
+  const { todos } = state;
+  const itemIndex = findItemIndexById(todos, id);
+  const updatedTodos = updateTodo(todos, itemIndex, {
+    editing: false,
+    text: text
+  });
 
-  return state.update('todos', todos => todos.set(itemIndex, updatedItem));
+  return { ...state, todos: updatedTodos };
+}
+
+function updateTodo(prevTodos, idx, nextTodo) {
+  const prevTodo = prevTodos[idx];
+  const nextTodos = [ ...prevTodos ];
+  nextTodos[idx] = { ...prevTodo, ...nextTodo };
+  return nextTodos;
 }
 
 function clearCompleted(state: State) {
-  return state.update(
-    'todos',
-    todos => todos.filterNot(
-      item => item.get('status') === 'completed'
-    )
-  );
+  const { todos } = state;
+
+  return {
+    ...state,
+    todos: todos.filter(item => item.status !== 'completed')
+  };
 }
 
 function addItem(state: State, text: string) {
-  const id = state
-      .get('todos')
-      .reduce((maxId, item) => Math.max(maxId,item.get('id')), 0) + 1;
-  const newItem = Map({ id, text, status: 'active' });
-  return state.update('todos', todos => todos.push(newItem));
+  const { todos } = state;
+  const createdId = todos.reduce((maxId, item) => Math.max(maxId, item.id), 0) + 1;
+  const newItem = { id: createdId, text: text, status: 'active' };
+
+  return {
+    ...state,
+    todos: [ ...todos, newItem ]
+  };
 }
 
-function deleteItem(state: State, itemId: string) {
-  return state.update('todos',
-    (todos) => todos.filterNot(
-      (item) => item.get('id') === itemId
-    )
-  );
+function deleteItem(state: State, id: string) {
+  const { todos } = state;
+
+  return {
+    ...state,
+    todos: todos.filter(item => item.id !== id)
+  };
 }
 
-export default function(state: State = Map({
-  todos: List([]),
+export default function(state: State = {
+  todos: [],
   filter: 'all'
-}), action: Action) {
+}, action: Action) {
   switch (action.type) {
-    case 'TOGGLE_COMPLETE':
+    case TOGGLE_COMPLETE:
       return toggleComplete(state, action.itemId);
-    case 'CHANGE_FILTER':
+    case CHANGE_FILTER:
       return changeFilter(state, action.filter);
-    case 'EDIT_ITEM':
+    case EDIT_ITEM:
       return editItem(state, action.itemId);
-    case 'CANCEL_EDITING':
+    case CANCEL_EDITING:
       return cancelEditing(state, action.itemId);
-    case 'DONE_EDITING':
+    case DONE_EDITING:
       return doneEditing(state, action.itemId, action.newText);
-    case 'CLEAR_COMPLETED':
+    case CLEAR_COMPLETED:
       return clearCompleted(state);
-    case 'ADD_ITEM':
+    case ADD_ITEM:
       return addItem(state, action.text);
-    case 'DELETE_ITEM':
+    case DELETE_ITEM:
       return deleteItem(state, action.itemId);
     default:
       return state;

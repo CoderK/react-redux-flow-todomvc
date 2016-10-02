@@ -7,20 +7,10 @@ import Footer from './Footer'
 class App extends React.Component {
 
   countByFilter() {
-    const empty = 0;
-    const { todos, filter } = this.props;
-
-    if (todos) {
-      return todos
-        .filter(
-          (item) => {
-            const status = item.get('status');
-            return filter === 'all' || status === filter;
-          }
-        ).size;
-    }
-
-    return empty;
+    const { todos = [], filter } = this.props;
+    return todos.filter(
+      ({ status }) => filter === 'all' || status === filter
+    ).length;
   }
 
   render() {

@@ -16,8 +16,8 @@ import type { Dispatch, State } from '../types/type-def';
 
 function mapStateToProps(state: State) {
   return {
-    todos: state.get('todos'),
-    filter: state.get('filter')
+    todos: state.todos,
+    filter: state.filter
   };
 }
 
